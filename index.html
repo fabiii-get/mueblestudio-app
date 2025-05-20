@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diseñador de Muebles</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="toolbar">
+    <input type="file" id="imageUpload" accept="image/*">
+    <button onclick="setTool('line')">Línea</button>
+    <button onclick="setTool('rect')">Caja</button>
+    <button onclick="setTool('text')">Texto</button>
+    <button onclick="setTool('move')">Mover</button>
+    <button onclick="setTool('erase')">Borrar</button>
+    <button onclick="toggleMic()">Micrófono</button>
+    <button onclick="downloadImage()">Guardar</button>
+  </div>
+  <canvas id="canvas" width="1200" height="800"></canvas>
+
+  <script src="app.js"></script>
+</body>
+</html>
