@@ -1,137 +1,53 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Melamina Sol - Optimizador de Cortes</title>
-  <style>
-    :root{
-      --brand:#ff9800;
-      --bg:#fffde7;
-      --ink:#1b1b1b;
-      --muted:#6b6b6b;
-      --line:#d7d7d7;
-      --panel:#fff9db;
-      --accent:#f9f5e1;
-    }
-    *{box-sizing:border-box}
-    body{
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background-color: var(--bg);
-      color: var(--ink);
-      margin:0; padding:1rem;
-    }
-    h1{ text-align:center; color:var(--brand); margin: .2rem 0 1rem }
-    .grid{
-      display:grid; gap:1rem;
-      grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
-      align-items:start;
-    }
-    .card{
-      background:#fff; border:1px solid var(--line); border-radius:12px;
-      padding:1rem; box-shadow: 0 1px 0 rgba(0,0,0,.03);
-    }
-    .card h2{ margin:.2rem 0  .6rem; font-size:1.05rem; color:#774d00 }
-    label{ display:block; margin-top:.5rem; font-size:.92rem }
-    input[type="number"], input[type="text"], select, textarea{
-      width:100%; padding:.55rem .6rem; margin-top:.35rem;
-      border:1px solid var(--line); border-radius:8px; background:#fff;
-      font-size:.95rem;
-    }
-    .row{ display:flex; gap:.6rem; }
-    .row > *{ flex:1 }
-    .inline{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
-    .inline label{ margin:0 }
-    .hint{ color:var(--muted); font-size:.85rem }
-    button{
-      background:var(--brand); color:#fff; border:none; cursor:pointer;
-      padding:.65rem .8rem; border-radius:10px; font-weight:700; font-size:.95rem;
-    }
-    button.ghost{ background:#fff; color:var(--brand); border:1px solid var(--brand) }
-    button.gray{ background:#f1f1f1; color:#333; border:1px solid #e6e6e6 }
-    button.danger{ background:#d0342c }
-    button:disabled{ opacity:.6; cursor:not-allowed }
-    .toolbar{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.7rem }
-    table{ width:100%; border-collapse:collapse; margin-top:.7rem }
-    th, td{ border:1px solid #e5e5e5; padding:.5rem; text-align:center; font-size:.9rem }
-    th{ background:#fff5e6 }
-    .tag{ display:inline-block; padding:.15rem .45rem; background:#ffe9c8; border-radius:6px; font-size:.8rem }
-    .muted{ color:var(--muted) }
-    .canvas-wrap{ margin-top:.7rem; background:var(--accent); border:1px solid #aaa; border-radius:10px; padding:.5rem }
-    canvas{ width:100% !important; height:auto !important; max-height:560px; background:#faf7ea; border:1px dashed #bbb; border-radius:8px }
-    .stat{ display:grid; grid-template-columns:1fr 1fr; gap:.4rem; margin-top:.6rem; font-size:.92rem }
-    .stat div{ display:flex; justify-content:space-between; background:#fff; border:1px solid #eee; border-radius:8px; padding:.4rem .6rem }
-    .pilltabs{ display:flex; gap:.4rem; flex-wrap:wrap; }
-    .pilltabs button{ background:#fff; color:#444; border:1px solid #ddd; }
-    .pilltabs button.active{ background:#333; color:#fff; border-color:#333 }
-    .blink{
-      animation: blink 1s linear infinite;
-    }
-    @keyframes blink{
-      50%{ opacity:.65 }
-    }
-    .dimmed{ opacity:.6; filter: grayscale(.2) }
-    .flex-between{ display:flex; justify-content:space-between; gap:.6rem; align-items:center }
-    .wrap{ flex-wrap:wrap }
-    .small{ font-size:.85rem }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace }
-  </style>
-</head>
-<body>
-  <h1>Melamina Sol</h1>
+<script>
+// ...deja todo igual arriba...
 
-  <div class="grid">
-    <!-- CONFIG PLACA -->
-    <section class="card">
-      <h2>Configuración de Placa</h2>
-      <div class="row">
-        <div>
-          <label>Ancho placa (mm)
-            <input type="number" id="placaAncho" value="2600" min="100" />
-          </label>
-        </div>
-        <div>
-          <label>Alto placa (mm)
-            <input type="number" id="placaAlto" value="1830" min="100" />
-          </label>
-        </div>
-      </div>
-      <div class="row">
-        <div>
-          <label>Espesor disco / Kerf (mm)
-            <input type="number" id="kerf" value="3" min="0" step="0.1" />
-          </label>
-        </div>
-        <div>
-          <label>Margen interior (mm)
-            <input type="number" id="margen" value="10" min="0" step="1" />
-          </label>
-        </div>
-      </div>
-      <div class="row">
-        <div>
-          <label>Corte perimetral / Desbaste (mm)
-            <input type="number" id="perimetral" value="0" min="0" step="1" />
-          </label>
-          <div class="hint">Se resta una pasada al perímetro antes de ubicar piezas.</div>
-        </div>
-        <div>
-          <label>Cantidad de placas
-            <input type="number" id="cantidadPlacas" value="1" min="1" />
-          </label>
-        </div>
-      </div>
+  function splitFreeRects(freeRects, rect, pw, ph, kerf, cuts, nextOrder){
+    // Sacamos el rectángulo usado
+    let idx = freeRects.findIndex(r => r.x===rect.x && r.y===rect.y);
+    if (idx===-1){ idx = 0; }
+    const used = freeRects.splice(idx,1)[0];
 
-      <div class="inline" style="margin-top:.6rem">
-        <label class="inline"><input type="checkbox" id="permitirRotar" checked /> Permitir rotar piezas (90°)</label>
-        <label class="inline"><input type="checkbox" id="bloquearVeta" /> Mantener dirección (simula veta)</label>
-      </div>
-    </section>
+    // REGISTRO DE CORTES (líneas de sierra):
+    // Corte vertical a la derecha de la pieza (centro del kerf)
+    const cutX = used.x + pw + (kerf>0 ? kerf/2 : 0);
+    if (cutX <= used.x + used.w && kerf>0){
+      cuts.push({
+        x1: cutX, y1: used.y,
+        x2: cutX, y2: used.y + ph,
+        order: nextOrder(), type:'v'
+      });
+    }
+    // Corte horizontal debajo de la pieza (centro del kerf)
+    const cutY = used.y + ph + (kerf>0 ? kerf/2 : 0);
+    if (cutY <= used.y + used.h && kerf>0){
+      cuts.push({
+        x1: used.x, y1: cutY,
+        x2: used.x + used.w, y2: cutY,
+        order: nextOrder(), type:'h'
+      });
+    }
 
-    <!-- AGREGAR PIEZA -->
-    <section class="card">
-      <h2>Agregar Pieza</h2>
-      <div class="row">
+    // Rectángulos libres resultantes
+    const right = {
+      x: used.x + pw + kerf,
+      y: used.y,
+      w: Math.max(0, used.w - pw - kerf),
+      h: ph
+    };
+    const bottom = {
+      x: used.x,
+      y: used.y + ph + kerf,
+      w: used.w,
+      h: Math.max(0, used.h - ph - kerf)
+    };
+
+    if (right.w>0 && right.h>0) freeRects.push(right);
+    if (bottom.w>0 && bottom.h>0) freeRects.push(bottom);
+    mergeFreeRects(freeRects);
+  }
+
+// ...deja todo igual abajo...
+</script>      <div class="row">
         <div><label>Cantidad
           <input type="number" id="cantidad" value="1" min="1" />
         </label></div>
